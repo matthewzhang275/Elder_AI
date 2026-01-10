@@ -21,6 +21,12 @@ export function NavBar() {
           >
             Footage
           </Link>
+          <Link
+            to="/face-scan"
+            className={location.pathname === "/face-scan" ? "navbar-link active" : "navbar-link"}
+          >
+            Face Scan
+          </Link>
         </div>
       </div>
     </nav>
