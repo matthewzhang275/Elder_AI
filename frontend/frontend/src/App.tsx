@@ -4,7 +4,7 @@ import { Home } from './pages/Home'
 import { Footage } from './pages/Footage'
 import './App.css'
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <div className="app">
