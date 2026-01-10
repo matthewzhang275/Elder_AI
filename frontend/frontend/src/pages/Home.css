@@ -1,0 +1,21 @@
+.home {
+  padding: 24px;
+}
+
+.home h1 {
+  margin-bottom: 8px;
+}
+
+.home p {
+  margin-bottom: 16px;
+}
+
+.home a {
+  color: #646cff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.home a:hover {
+  text-decoration: underline;
+}
