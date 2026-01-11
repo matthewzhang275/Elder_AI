@@ -21,7 +21,16 @@ from django.views.decorators.http import require_http_methods
 
 from .models import DayBlock, IndividualVideo, People
 from .recognizer_service import get_recognizer
+from .twelvelabs_analyzer import TwelveLabsConfig, TwelveLabsVideoAnalyzer
 
+def run_twelvelabs_on_processed_video(request, video_abs_url: str, clip_id: str):
+    cfg = TwelveLabsConfig(
+        api_key=settings.TWELVELABS_API_KEY,
+        index_name="elder-ai-index",
+    )
+    analyzer = TwelveLabsVideoAnalyzer(cfg)
+    result = analyzer.analyze_video_url(video_url=video_abs_url, video_id_hint=clip_id)
+    return result
 # ---------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------

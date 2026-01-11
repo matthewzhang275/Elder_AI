@@ -1,0 +1,100 @@
+/* src/components/HoverVideoCard.css */
+.hvc {
+  position: relative;
+  width: 280px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 18px;
+  padding: 10px;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.26);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.hvc-glow {
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(110, 231, 255, 0.18), transparent 45%),
+    radial-gradient(circle at 70% 80%, rgba(167, 139, 250, 0.16), transparent 45%);
+  filter: blur(18px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.hvc-media {
+  position: relative;
+  height: 160px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.hvc-thumb,
+.hvc-video {
+  position: absolute;
+  inset: 0;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.hvc-thumb img,
+.hvc-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hvc-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+}
+
+.hvc-thumb.is-hidden {
+  opacity: 0;
+  transform: scale(1.01);
+}
+
+.hvc-video {
+  opacity: 0;
+}
+
+.hvc-video.is-visible {
+  opacity: 1;
+}
+
+.hvc-shine {
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.18), transparent 40%);
+  transform: rotate(8deg);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+
+.hvc-content {
+  position: relative;
+  padding: 10px 2px 4px;
+}
+
+.hvc-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.hvc-desc {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.35;
+}
