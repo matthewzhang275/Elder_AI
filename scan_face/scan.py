@@ -116,60 +116,62 @@ class PersonRecognizer:
         print(f"  Result: {results['success']} successful, {results['failed']} failed")
         return results
     
-    def register_person_from_directory(self, directory: str, name: str) -> Dict[str, int]:
+    def register_person_from_video(self, video_path: str, name: str, frame_interval: int = 30, max_frames: Optional[int] = None) -> Dict[str, int]:
         """
-        Register a person using all images in a directory.
-        Useful for registering multiple angles/expressions of the same person.
+        Register a person using frames from a video file.
+        Samples frames from the video to capture different angles and expressions.
+        This improves accuracy by learning multiple views of the same person.
         
         Args:
-            directory: Directory containing images of the person
+            video_path: Path to video file
             name: Name of the person
+            frame_interval: Process every Nth frame (default: 30, meaning ~1 frame per second for 30fps video)
+            max_frames: Maximum number of frames to process (None = no limit)
         
         Returns:
             Dictionary with 'success' and 'failed' counts
         """
-        dir_path = Path(directory)
-        image_files = []
+        video_capture = cv2.VideoCapture(video_path)
         
-        for img_file in dir_path.glob("*"):
-            if img_file.is_file() and img_file.suffix.lower() in ['.jpg', '.jpeg', '.png', '.bmp']:
-                image_files.append(str(img_file))
+        if not video_capture.isOpened():
+            raise ValueError(f"Could not open video file: {video_path}")
         
-        if not image_files:
-            print(f"No image files found in {directory}")
-            return {'success': 0, 'failed': 0}
+        results = {'success': 0, 'failed': 0}
+        frame_count = 0
+        processed_count = 0
         
-        return self.register_person_multiple(image_files, name)
-    
-    def register_persons_from_directory(self, directory: str) -> Dict[str, bool]:
-        """
-        Register multiple persons from a directory.
-        Each subdirectory or file should be named after the person.
-        
-        Args:
-            directory: Directory containing images named after the person
-        
-        Returns:
-            Dictionary mapping names to registration success status
-        """
-        results = {}
-        dir_path = Path(directory)
-        
-        for item in dir_path.iterdir():
-            if item.is_dir():
-                # Subdirectory = person name, register all images in it
-                name = item.name
-                result = self.register_person_from_directory(str(item), name)
-                results[name] = result['success'] > 0
-            elif item.is_file() and item.suffix.lower() in ['.jpg', '.jpeg', '.png', '.bmp']:
-                # Single file = person name from filename
-                name = item.stem
-                try:
-                    success = self.register_person(str(item), name)
-                    results[name] = success
-                except Exception as e:
-                    print(f"Error registering {name}: {e}")
-                    results[name] = False
+        try:
+            print(f"Registering {name} from video: {video_path}")
+            print(f"  Frame interval: {frame_interval}, Max frames: {max_frames or 'unlimited'}")
+            
+            while True:
+                ret, frame = video_capture.read()
+                
+                if not ret:
+                    break
+                
+                frame_count += 1
+                
+                # Process frames at the specified interval
+                if frame_count % frame_interval == 0:
+                    if max_frames is not None and processed_count >= max_frames:
+                        break
+                    
+                    processed_count += 1
+                    print(f"  Processing frame {frame_count} ({processed_count} processed)...", end=' ')
+                    
+                    success = self.register_person(frame, name)
+                    if success:
+                        results['success'] += 1
+                        print("OK")
+                    else:
+                        results['failed'] += 1
+                        print("FAILED (no face detected)")
+            
+            print(f"  Result: {results['success']} successful, {results['failed']} failed out of {processed_count} processed frames")
+            
+        finally:
+            video_capture.release()
         
         return results
     
@@ -418,8 +420,8 @@ if __name__ == "__main__":
     # Example: Register a person with multiple images (better accuracy)
     # recognizer.register_person_multiple(["angle1.jpg", "angle2.jpg", "angle3.jpg"], "John Doe")
     
-    # Example: Register a person from directory (all images in folder)
-    # recognizer.register_person_from_directory("person_images/john_doe/", "John Doe")
+    # Example: Register a person from video (samples frames from video)
+    # recognizer.register_person_from_video("path/to/person_video.mp4", "John Doe")
     
     # Example: Register a person (single image)
     # recognizer.register_person("path/to/person_image.jpg", "John Doe")
@@ -436,5 +438,6 @@ if __name__ == "__main__":
     print("PersonRecognizer class ready to use!")
     print("Register persons using register_person() method")
     print("For better accuracy, use register_person_multiple() with multiple images")
+    print("Or use register_person_from_video() to register from video files")
     print("Process images using process_image() method")
     print("Process videos using process_video() method")
