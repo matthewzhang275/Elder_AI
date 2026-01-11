@@ -279,3 +279,53 @@
     0 0 0 6px rgba(255, 255, 255, 0.05);
   transform: translateY(-1px);
 }
+
+/* ===========================
+   FIX: global button styles breaking alignment
+   =========================== */
+
+.rgd-toggle,
+.rgd-carArrow {
+  /* kill global button padding/line-height */
+  padding: 0 !important;
+  line-height: 1 !important;
+
+  /* ensure the glyph is centered */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* prevent Safari default button rendering quirks */
+  -webkit-appearance: none;
+  appearance: none;
+
+  /* remove any default background bleed */
+  background-clip: padding-box;
+}
+
+/* Toggle icon centering */
+.rgd-toggleIcon {
+  display: block;
+  line-height: 1;
+}
+
+/* Make carousel arrows consistent + centered */
+.rgd-carArrow {
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Make the side toggle consistent + centered */
+.rgd-toggle {
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+}
+
+/* Optional: avoid text selection / weird baseline */
+.rgd-toggle,
+.rgd-carArrow {
+  user-select: none;
+}

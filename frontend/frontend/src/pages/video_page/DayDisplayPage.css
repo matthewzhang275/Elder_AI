@@ -1,48 +1,15 @@
-/* ---- full-bleed reset (fixes white borders) ---- */
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background: #07070a;
-}
-
 * {
   box-sizing: border-box;
 }
+
+
 
 /* ---- page ---- */
 .dd-page {
   min-height: 100vh;
   padding: 28px;
   color: rgba(255, 255, 255, 0.92);
-
-  background:
-    /* soft glass glow layers */
-    radial-gradient(
-      1200px circle at 15% 10%,
-      rgba(120, 220, 255, 0.14),
-      transparent 55%
-    ),
-    radial-gradient(
-      900px circle at 85% 30%,
-      rgba(180, 200, 255, 0.12),
-      transparent 60%
-    ),
-    radial-gradient(
-      700px circle at 50% 85%,
-      rgba(120, 255, 220, 0.10),
-      transparent 65%
-    ),
-
-    /* base glass gradient */
-    linear-gradient(
-      180deg,
-      #0a0f14,
-      #070b10
-    );
 }
-
-
 
 
 .dd-shell {
@@ -187,11 +154,23 @@ html, body, #root {
 .dd-arrow {
   width: 42px;
   height: 42px;
+  padding: 0;                 /* IMPORTANT: kill global button padding */
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
+
+  display: inline-flex;       /* center glyph perfectly */
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;             /* IMPORTANT: kill baseline drift */
+  font-size: 18px;            /* consistent arrow size */
+  font-weight: 600;
+
+  -webkit-appearance: none;   /* avoid Safari button quirks */
+  appearance: none;
 
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
