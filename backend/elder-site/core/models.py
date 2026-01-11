@@ -14,27 +14,34 @@ class People(models.Model):
     def __str__(self):
         return f"{self.name} ({self.age})"
 
-
 class DayBlock(models.Model):
-    """
-    One day + one location.
-    """
     date = models.DateField()
     location = models.CharField(max_length=255, blank=True, default="")
     events = models.JSONField(default=list, blank=True)
-
     people = models.ManyToManyField(People, related_name="dayblocks", blank=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["date", "location"], name="uniq_dayblock_date_location")
         ]
-        indexes = [
-            models.Index(fields=["date", "location"]),
-        ]
 
     def __str__(self):
         return f"{self.date} @ {self.location or 'Unknown'}"
+
+from django.utils.text import slugify
+import os
+
+def footage_upload_path(instance, filename):
+    # instance.dayblock.date is the date you selected
+    d = instance.dayblock.date
+    loc = slugify(instance.dayblock.location or "unknown")
+    cam = instance.camera or "cam"
+    clip = slugify(instance.clip_id or "clip")
+
+    # keep original extension
+    ext = os.path.splitext(filename)[1].lower() or ".mp4"
+
+    return f"footage/{d:%Y/%m/%d}/{loc}/{cam}/{clip}{ext}"
 
 
 class IndividualVideo(models.Model):
@@ -62,7 +69,7 @@ class IndividualVideo(models.Model):
     end_time = models.TimeField(null=True, blank=True)
 
     # store the file itself
-    video = models.FileField(upload_to="footage/%Y/%m/%d/")
+    video = models.FileField(upload_to=footage_upload_path)
 
     # extra stuff (duration, fps, resolution, etc)
     meta = models.JSONField(default=dict, blank=True)

@@ -78,6 +78,12 @@ export const RightGlassDrawer: React.FC<RightGlassDrawerProps> = ({
     return events.filter((e) => e.personId === selectedPersonId)
   }, [events, selectedPersonId])
 
+  // ✅ NEW: resolve selected person's NAME from the ID
+  const selectedPersonName = useMemo(() => {
+    if (!selectedPersonId) return null
+    return people.find((p) => p.id === selectedPersonId)?.name ?? null
+  }, [people, selectedPersonId])
+
   const onShowAll = () => setSelectedPersonId(null)
   const onPersonClick = (personId: string) => setSelectedPersonId(personId)
 
@@ -153,7 +159,7 @@ export const RightGlassDrawer: React.FC<RightGlassDrawerProps> = ({
           <div className="rgd-section rgd-timelineSection">
             <div className="rgd-sectionHeader rgd-timelineHeader">
               <div className="rgd-sectionTitle">
-                Timeline{selectedPersonId ? ` • ${selectedPersonId}` : " • All"}
+                Timeline{selectedPersonName ? ` • ${selectedPersonName}` : " • All"}
               </div>
               <div className="rgd-divider" />
             </div>
