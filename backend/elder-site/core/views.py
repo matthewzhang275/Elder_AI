@@ -160,8 +160,8 @@ def _ensure_face_thumbnail(person: People) -> None:
 @require_http_methods(["GET"])
 def list_people(request):
     """
-    Returns all people, but instead of returning the scan video URL,
-    returns a thumbnail image URL taken from the first frame of the scan video.
+    Returns all people, with a thumbnail image URL taken from
+    the first frame of the scan video (absolute URL).
     """
     people = People.objects.all().order_by("-id")
 
@@ -169,12 +169,18 @@ def list_people(request):
     for p in people:
         _ensure_face_thumbnail(p)
 
+        thumb_rel = p.face_image.url if p.face_image else None
+        thumb_abs = request.build_absolute_uri(thumb_rel) if thumb_rel else None
+
         out.append({
             "id": p.id,
             "name": p.name,
             "age": p.age,
             "description": p.description,
-            "thumb_url": p.face_image.url if p.face_image else None,
+            "thumb_url": thumb_abs,
         })
 
-    return JsonResponse({"ok": True, "people": out})
+    return JsonResponse({
+        "ok": True,
+        "people": out,
+    })
