@@ -241,14 +241,6 @@
   letter-spacing: 0.5px;
 }
 
-.footage-day-card-location {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
 /* Responsive */
 @media (max-width: 900px) {
   .footage-page {

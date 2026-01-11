@@ -144,7 +144,6 @@ export function Footage() {
                       <span className="footage-day-card-daynum">{dayNumber}</span>
                       <span className="footage-day-card-month">{monthName}</span>
                     </div>
-                    <div className="footage-day-card-location">{day.location}</div>
                   </Link>
                 )
               })}
