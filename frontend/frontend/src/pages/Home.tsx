@@ -87,6 +87,55 @@ export function Home() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <section className="content-section faq-section">
+        <h2 className="section-title">Frequently Asked Questions</h2>
+        <div className="faq-grid">
+          <div className="faq-card">
+            <div className="faq-header">
+              <div className="faq-icon">🔒</div>
+              <h3 className="faq-title">Security & Privacy</h3>
+            </div>
+            <div className="faq-content">
+              <p className="faq-text">
+                <strong>Compliance:</strong> We adhere to strict data protection standards to ensure that resident information is accessible only to authorized care staff and verified family members.
+              </p>
+              <p className="faq-text">
+                <strong>Encryption:</strong> All video and data is heavily encrypted to prevent any possible leakage of information, ensuring the highest level of security for sensitive resident data.
+              </p>
+            </div>
+          </div>
+          <div className="faq-card">
+            <div className="faq-header">
+              <div className="faq-icon">🎯</div>
+              <h3 className="faq-title">Accuracy</h3>
+            </div>
+            <div className="faq-content">
+              <p className="faq-text">
+                This software does not serve as a diagnosis tool. The system is designed for <strong>early risk flagging</strong> rather than medical diagnosis.
+              </p>
+              <p className="faq-text">
+                Our accuracy focuses on prompting timely human follow-up, ensuring that staff can verify concerns before they become emergencies. All flagged observations require professional review and validation.
+              </p>
+            </div>
+          </div>
+          <div className="faq-card">
+            <div className="faq-header">
+              <div className="faq-icon">💼</div>
+              <h3 className="faq-title">Cost & Functionality</h3>
+            </div>
+            <div className="faq-content">
+              <p className="faq-text">
+                <strong>Tiered Subscriptions:</strong> We offer flexible subscription plans that scale with your needs, allowing for more data processing and advanced features as required.
+              </p>
+              <p className="faq-text">
+                <strong>Efficiency:</strong> Instead of manually reviewing hours of security footage after an incident, staff receive an automated summary they can review in seconds. This allows more time for direct resident care and proactive interventions.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
