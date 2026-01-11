@@ -1,11 +1,12 @@
-import { Navigate, Route, Routes } from "react-router-dom"
-import Home from "./pages/Home"
+import { BrowserRouter,Routes, Route } from "react-router-dom"
+import DayDisplayPage from "./pages/video_page/DayDisplayPage"
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/home" replace />} />
-      <Route path="/home" element={<Home />} />
-    </Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/day_display/:id" element={<DayDisplayPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }

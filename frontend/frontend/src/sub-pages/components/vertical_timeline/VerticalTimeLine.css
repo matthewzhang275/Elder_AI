@@ -1,0 +1,123 @@
+.vt-root {
+  width: 100%;
+}
+
+.vt-railWrap {
+  position: relative;
+  width: 100%;
+  border-radius: 18px;
+  overflow: visible; /* don’t clip chips */
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.vt-rail {
+  position: absolute;
+  top: var(--vt-pad-top, 22px);
+  bottom: var(--vt-pad-bottom, 22px);
+  left: 86px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+.vt-labelRow {
+  position: absolute;
+  left: 14px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.vt-labelText {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.62);
+  user-select: none;
+  min-width: 56px;
+}
+
+.vt-tick {
+  position: absolute;
+  left: 86px;
+  transform: translateY(-50%);
+  height: 1px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.vt-tickMajor {
+  width: 12px;
+}
+
+.vt-tickMinor {
+  width: 7px;
+  opacity: 0.55;
+}
+
+/* major tick inside label row */
+.vt-labelRow .vt-tickMajor {
+  position: static;
+  transform: none;
+}
+
+/* event is anchored at the rail */
+.vt-event {
+  position: absolute;
+  left: 86px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  opacity: 0.88;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.vt-event:hover {
+  opacity: 1;
+  transform: translateY(-50%) translateX(1px);
+}
+
+.vt-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow:
+    0 0 0 5px rgba(255, 255, 255, 0.07),
+    0 10px 22px rgba(0, 0, 0, 0.25);
+}
+
+.vt-branch {
+  width: 28px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+.vt-chip {
+  max-width: 320px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.86);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* right-only marker class (kept for clarity) */
+.vt-right {
+  flex-direction: row;
+}
