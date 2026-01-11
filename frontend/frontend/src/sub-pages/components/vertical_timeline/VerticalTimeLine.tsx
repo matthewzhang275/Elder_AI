@@ -6,6 +6,11 @@ export type TimelineEvent = {
   personId: string
   atSec: number
   label?: string
+
+  // ✅ NEW
+  variant?: "info" | "warn"
+  severity?: "low" | "medium" | "high"
+  confidence?: number
 }
 
 type VerticalTimelineProps = {
@@ -110,16 +115,24 @@ export default function VerticalTimeline({
           return <span key={`min-${t}`} className="vt-tick vt-tickMinor" style={{ top: `${y}px` }} />
         })}
 
-        {/* Events (ALL RIGHT) */}
+        {/* Events */}
         {normalizedEvents.map((ev) => {
           const y = secToY(ev.atSec, safeDuration, padTopPx, padBottomPx, heightPx)
           const text = ev.label ?? `Person ${ev.personId}`
+
+          const isWarn = ev.variant === "warn"
+          const sev = ev.severity ?? "low"
 
           return (
             <button
               key={ev.id}
               type="button"
-              className="vt-event vt-right"
+              className={[
+                "vt-event",
+                "vt-right",
+                isWarn ? "vt-eventWarn" : "vt-eventInfo",
+                isWarn ? `vt-sev-${sev}` : "",
+              ].join(" ")}
               style={{ top: `${y}px` }}
               onClick={() => onEventClick?.(ev)}
               title={`${fmt(ev.atSec)} • ${text}`}

@@ -250,7 +250,7 @@ export default function DayDisplayPage() {
       </div>
 
       {/* Right glass drawer (fixed) */}
-      <RightGlassDrawer dayId={dayId} defaultOpen={false}>
+      <RightGlassDrawer dayId={dayId} activeClipId={activeStream?.clipId ?? null} defaultOpen={false}>
         {!activeStream ? (
           <div style={{ opacity: 0.9 }} />
         ) : (
