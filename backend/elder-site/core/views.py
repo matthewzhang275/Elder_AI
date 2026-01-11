@@ -13,7 +13,7 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files import File
 from django.db import transaction
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -274,15 +274,35 @@ def store_uploaded_video(*, date, location, camera, clip_id, title, file_obj, me
     Stores ONLY the PROCESSED video (file_obj) into IndividualVideo.video.
     If the clip_id already exists, replaces the previous stored file (deletes it first).
     """
+    # #region agent log
+    log_data = {'location': 'views.py:268', 'message': 'store_uploaded_video entry', 'data': {'clip_id': clip_id, 'date': str(date), 'location': location, 'camera': camera}, 'timestamp': datetime.now().timestamp(), 'sessionId': 'debug-session', 'runId': 'run1', 'hypothesisId': 'A'}
+    with open(r'c:\Users\kzhao\Documents\Projects\SBHacks\Elder_AI\.cursor\debug.log', 'a') as f: f.write(json.dumps(log_data) + '\n')
+    # #endregion
     day, _ = DayBlock.objects.get_or_create(date=date, location=location)
+    # #region agent log
+    log_data = {'location': 'views.py:269', 'message': 'DayBlock retrieved/created', 'data': {'day_id': day.id, 'date': str(day.date), 'location': day.location}, 'timestamp': datetime.now().timestamp(), 'sessionId': 'debug-session', 'runId': 'run1', 'hypothesisId': 'A'}
+    with open(r'c:\Users\kzhao\Documents\Projects\SBHacks\Elder_AI\.cursor\debug.log', 'a') as f: f.write(json.dumps(log_data) + '\n')
+    # #endregion
 
-    obj, _created = IndividualVideo.objects.get_or_create(clip_id=clip_id)
+    # #region agent log
+    log_data = {'location': 'views.py:270', 'message': 'Before get_or_create IndividualVideo', 'data': {'clip_id': clip_id, 'dayblock_id': day.id, 'camera': camera}, 'timestamp': datetime.now().timestamp(), 'sessionId': 'debug-session', 'runId': 'run1', 'hypothesisId': 'A'}
+    with open(r'c:\Users\kzhao\Documents\Projects\SBHacks\Elder_AI\.cursor\debug.log', 'a') as f: f.write(json.dumps(log_data) + '\n')
+    # #endregion
+    obj, _created = IndividualVideo.objects.get_or_create(
+        clip_id=clip_id,
+        defaults={'dayblock': day, 'camera': camera, 'title': title or "", 'meta': meta or {}}
+    )
+    # #region agent log
+    log_data = {'location': 'views.py:276', 'message': 'After get_or_create IndividualVideo', 'data': {'created': _created, 'obj_id': obj.id if hasattr(obj, 'id') else None, 'dayblock_id': obj.dayblock_id if hasattr(obj, 'dayblock_id') else None}, 'timestamp': datetime.now().timestamp(), 'sessionId': 'debug-session', 'runId': 'run1', 'hypothesisId': 'A'}
+    with open(r'c:\Users\kzhao\Documents\Projects\SBHacks\Elder_AI\.cursor\debug.log', 'a') as f: f.write(json.dumps(log_data) + '\n')
+    # #endregion
 
-    # update metadata fields
-    obj.dayblock = day
-    obj.camera = camera
-    obj.title = title or ""
-    obj.meta = meta or {}
+    # update metadata fields (for existing objects)
+    if not _created:
+        obj.dayblock = day
+        obj.camera = camera
+        obj.title = title or ""
+        obj.meta = meta or {}
 
     # Replace existing processed file cleanly
     if obj.video:
@@ -474,6 +494,84 @@ def footage_thumbnail(request, video_id: int):
     resp = HttpResponse(jpg_bytes, content_type="image/jpeg")
     resp["Cache-Control"] = "public, max-age=3600"
     return resp
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def serve_video(request, video_id: int):
+    """
+    GET /api/footage/video/<id>/
+    Serves video file with Range request support for streaming.
+    """
+    # #region agent log
+    log_data = {'location': 'views.py:492', 'message': 'serve_video entry', 'data': {'video_id': video_id, 'range_header': request.META.get('HTTP_RANGE', None)}, 'timestamp': datetime.now().timestamp(), 'sessionId': 'debug-session', 'runId': 'run1', 'hypothesisId': 'A'}
+    with open(r'c:\Users\kzhao\Documents\Projects\SBHacks\Elder_AI\.cursor\debug.log', 'a') as f: f.write(json.dumps(log_data) + '\n')
+    # #endregion
+    
+    v = get_object_or_404(IndividualVideo.objects.select_related("dayblock"), id=video_id)
+    
+    if not v.video:
+        return HttpResponse("Video missing", status=404)
+    
+    try:
+        video_path = v.video.path
+    except Exception as e:
+        # #region agent log
+        log_data = {'location': 'views.py:505', 'message': 'Error getting video path', 'data': {'video_id': video_id, 'error': str(e)}, 'timestamp': datetime.now().timestamp(), 'sessionId': 'debug-session', 'runId': 'run1', 'hypothesisId': 'B'}
+        with open(r'c:\Users\kzhao\Documents\Projects\SBHacks\Elder_AI\.cursor\debug.log', 'a') as f: f.write(json.dumps(log_data) + '\n')
+        # #endregion
+        return HttpResponse("Video not available on local storage", status=404)
+    
+    if not video_path or not os.path.exists(video_path):
+        # #region agent log
+        log_data = {'location': 'views.py:508', 'message': 'Video file missing', 'data': {'video_id': video_id, 'video_path': video_path}, 'timestamp': datetime.now().timestamp(), 'sessionId': 'debug-session', 'runId': 'run1', 'hypothesisId': 'B'}
+        with open(r'c:\Users\kzhao\Documents\Projects\SBHacks\Elder_AI\.cursor\debug.log', 'a') as f: f.write(json.dumps(log_data) + '\n')
+        # #endregion
+        return HttpResponse("Video file missing", status=404)
+    
+    # #region agent log
+    file_size = os.path.getsize(video_path)
+    log_data = {'location': 'views.py:515', 'message': 'Video file found', 'data': {'video_id': video_id, 'video_path': video_path, 'file_size': file_size, 'file_extension': os.path.splitext(video_path)[1]}, 'timestamp': datetime.now().timestamp(), 'sessionId': 'debug-session', 'runId': 'run1', 'hypothesisId': 'B'}
+    with open(r'c:\Users\kzhao\Documents\Projects\SBHacks\Elder_AI\.cursor\debug.log', 'a') as f: f.write(json.dumps(log_data) + '\n')
+    # #endregion
+    
+    # Determine content type based on file extension
+    file_ext = os.path.splitext(video_path)[1].lower()
+    content_type_map = {
+        '.mp4': 'video/mp4',
+        '.webm': 'video/webm',
+        '.mov': 'video/quicktime',
+        '.avi': 'video/x-msvideo',
+    }
+    content_type = content_type_map.get(file_ext, 'video/mp4')
+    
+    # #region agent log
+    log_data = {'location': 'views.py:530', 'message': 'Content type determined', 'data': {'video_id': video_id, 'file_ext': file_ext, 'content_type': content_type}, 'timestamp': datetime.now().timestamp(), 'sessionId': 'debug-session', 'runId': 'run1', 'hypothesisId': 'C'}
+    with open(r'c:\Users\kzhao\Documents\Projects\SBHacks\Elder_AI\.cursor\debug.log', 'a') as f: f.write(json.dumps(log_data) + '\n')
+    # #endregion
+    
+    # Use FileResponse which handles Range requests automatically
+    # FileResponse will close the file handle when done
+    # Don't set Content-Length manually - FileResponse handles it for Range requests
+    file_handle = open(video_path, 'rb')
+    response = FileResponse(
+        file_handle,
+        content_type=content_type,
+        as_attachment=False  # Serve inline, not as download
+    )
+    response['Accept-Ranges'] = 'bytes'
+    response['Cache-Control'] = 'public, max-age=3600'
+    # Add CORS headers
+    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
+    response['Access-Control-Allow-Headers'] = 'Range'
+    
+    # #region agent log
+    log_data = {'location': 'views.py:550', 'message': 'FileResponse created', 'data': {'video_id': video_id, 'content_type': content_type, 'file_size': file_size, 'has_range_header': bool(request.META.get('HTTP_RANGE')), 'range_header': request.META.get('HTTP_RANGE')}, 'timestamp': datetime.now().timestamp(), 'sessionId': 'debug-session', 'runId': 'run1', 'hypothesisId': 'A'}
+    with open(r'c:\Users\kzhao\Documents\Projects\SBHacks\Elder_AI\.cursor\debug.log', 'a') as f: f.write(json.dumps(log_data) + '\n')
+    # #endregion
+    
+    return response
 
 
 @csrf_exempt
