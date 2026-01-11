@@ -116,63 +116,58 @@ def upload_footage(request):
         "title": obj.title,
     })
 
+
 def _ensure_face_thumbnail(person: People) -> None:
-    """
-    If person.face_image is missing and person.scan_video exists,
-    generate a jpg thumbnail from ~middle of the scan video and save it.
-    """
     if person.face_image:
         return
     if not person.scan_video:
         return
 
     try:
-        import cv2
-
-        video_path = person.scan_video.path  # requires local storage
-        cap = cv2.VideoCapture(video_path)
-
-        if not cap.isOpened():
-            cap.release()
-            return
-
-        # Try to seek to the middle of the video (or at least ~1s in)
-        fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
-        frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0
-
-        # If frame_count is known, go to middle; else go to 1 second.
-        if frame_count and frame_count > 0:
-            target_frame = int(frame_count * 0.5)
-        else:
-            target_frame = int(fps * 1.0)
-
-        cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
-
-        ok, frame = cap.read()
-
-        # Fallback: if that frame is bad/black, try a few other offsets
-        if (not ok) or frame is None:
-            for sec in (0.5, 1.0, 2.0, 3.0):
-                cap.set(cv2.CAP_PROP_POS_MSEC, sec * 1000.0)
-                ok, frame = cap.read()
-                if ok and frame is not None:
-                    break
-
-        cap.release()
-
-        if (not ok) or frame is None:
-            return
-
-        # Encode jpg
-        ok2, buf = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
-        if not ok2:
-            return
-
-        fname = f"person_{person.id}_thumb.jpg"
-        person.face_image.save(fname, ContentFile(buf.tobytes()), save=True)
-
+        import subprocess
+        import cv2  # only used to get duration if available
     except Exception:
         return
+
+    try:
+        video_path = person.scan_video.path  # local storage required
+    except Exception:
+        return
+
+    # Pick a timestamp: try middle, else 1 second
+    ts = 1.0
+    try:
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS) or 0
+        frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0
+        cap.release()
+        if fps > 0 and frame_count > 0:
+            ts = max(0.5, (frame_count / fps) * 0.5)
+    except Exception:
+        ts = 1.0
+
+    # ffmpeg: extract one frame as jpg to stdout
+    cmd = [
+        "ffmpeg",
+        "-ss", str(ts),
+        "-i", video_path,
+        "-frames:v", "1",
+        "-q:v", "2",
+        "-f", "image2pipe",
+        "-vcodec", "mjpeg",
+        "pipe:1",
+    ]
+
+    try:
+        jpg_bytes = subprocess.check_output(cmd, stderr=subprocess.DEVNULL)
+    except Exception:
+        return
+
+    if not jpg_bytes or len(jpg_bytes) < 2000:
+        return
+
+    fname = f"person_{person.id}_thumb.jpg"
+    person.face_image.save(fname, ContentFile(jpg_bytes), save=True)
     
 @csrf_exempt
 @require_http_methods(["GET"])
