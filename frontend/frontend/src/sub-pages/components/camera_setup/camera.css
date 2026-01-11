@@ -1,0 +1,327 @@
+/* page */
+.cs-page {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  min-height: auto;
+  background: transparent;
+}
+
+/* give the whole component breathing room (top + bottom) */
+.cs-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px 0 18px; /* ← adds space above header + below everything */
+}
+
+/* header */
+.cs-headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-top: 10px;   /* ← keeps title from touching top */
+  padding-bottom: 6px; /* ← tiny separation */
+}
+
+.cs-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.cs-pill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* layout */
+.cs-stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: stretch;
+
+  padding-bottom: 12px; /* ← bottom breathing room so nothing hugs the edge */
+}
+
+/* left panel */
+.cs-boxWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cs-3dWrap {
+  height: 520px;
+  border-radius: 26px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.cs-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.cs-dragHint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  padding-left: 6px;
+  padding-bottom: 8px; /* ← extra bottom spacing under hint */
+}
+
+/* 3D pills (smaller) */
+.cs-cornerCam3d {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.07));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  cursor: pointer;
+  outline: none;
+
+  transition: transform 140ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.cs-cornerCam3d--sm {
+  padding: 7px 9px;
+  gap: 6px;
+  font-size: 11.5px;
+}
+
+.cs-cornerCam3d:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.cs-camDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.35);
+  transition: transform 140ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.cs-camText {
+  line-height: 1;
+}
+
+/* Stronger active state for 3D pills */
+.cs-cornerCam3d.isActive {
+  transform: translateY(-1px) scale(1.05);
+  border-color: rgba(255, 255, 255, 0.55);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.10));
+  box-shadow:
+    0 16px 44px rgba(0, 0, 0, 0.55),
+    0 0 0 2px rgba(255, 255, 255, 0.22),
+    0 0 26px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20);
+}
+
+.cs-cornerCam3d.isActive::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0.0) 60%);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.cs-cornerCam3d.isActive .cs-camDot {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.15);
+  box-shadow:
+    0 0 18px rgba(255, 255, 255, 0.55),
+    0 0 42px rgba(255, 255, 255, 0.25);
+}
+
+/* right stream panel: takes whole right side */
+.cs-streamPanel {
+  height: 520px;
+}
+
+.cs-streamGlass {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 26px;
+  overflow: hidden;
+
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* video fills whole right side */
+.cs-streamVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.01);
+  filter: saturate(1.08) contrast(1.06);
+}
+
+/* overlays */
+.cs-streamOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px; /* ← a touch more padding so bottom buttons have room */
+
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.18) 0%,
+    rgba(0, 0, 0, 0.18) 35%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+}
+
+.cs-streamTop {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cs-streamTitle {
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.cs-streamSub {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* HUD chips */
+.cs-streamHudRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cs-hudChip {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.9);
+
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.07));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* quick buttons */
+.cs-streamQuickRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+
+  padding-bottom: 6px; /* ← ensures buttons don't hug the bottom edge */
+}
+
+.cs-quickBtn {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 650;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+
+  transition: transform 140ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.cs-quickBtn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Stronger active state for right-side buttons */
+.cs-quickBtn.isActive {
+  transform: translateY(-1px) scale(1.04);
+  border-color: rgba(255, 255, 255, 0.55);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.10));
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.18),
+    0 0 26px rgba(255, 255, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* sheen */
+.cs-streamSheen {
+  pointer-events: none;
+  position: absolute;
+  top: -80px;
+  left: -120px;
+  width: 280px;
+  height: 280px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.35),
+    rgba(255, 255, 255, 0.0) 60%
+  );
+  transform: rotate(16deg);
+}
+
+/* responsive */
+@media (max-width: 980px) {
+  .cs-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .cs-3dWrap,
+  .cs-streamPanel {
+    height: 460px;
+  }
+
+  .cs-shell {
+    padding: 16px 0 16px;
+  }
+}

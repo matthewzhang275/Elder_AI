@@ -1,0 +1,183 @@
+/* FaceCard.css */
+
+/* IMPORTANT: FaceCard is a button */
+.facecard {
+  width: 360px;
+  height: 460px;
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  /* mouse vars */
+  --mx: 0.5;
+  --my: 0.5;
+}
+
+.facecard:disabled {
+  cursor: default;
+  opacity: 0.92;
+}
+
+.facecard-glow {
+  position: absolute;
+  inset: -90px;
+  background:
+    radial-gradient(520px circle at 20% 10%, rgba(110, 231, 255, 0.20), transparent 58%),
+    radial-gradient(520px circle at 85% 30%, rgba(167, 139, 250, 0.16), transparent 60%),
+    radial-gradient(420px circle at 30% 90%, rgba(52, 211, 153, 0.10), transparent 55%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.facecard-topRight {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+}
+
+/* viewer takes top portion */
+.facecard-viewer {
+  height: 62%;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+/* image follow cursor: translate a little based on --mx/--my */
+.facecard-imgWrap {
+  position: absolute;
+  inset: 0;
+  transform: translate(
+    calc((var(--mx) - 0.5) * 14px),
+    calc((var(--my) - 0.5) * 14px)
+  );
+  transition: transform 120ms ease;
+  will-change: transform;
+}
+
+.facecard-imgWrap.is-hover {
+  transition: transform 0ms;
+}
+
+.facecard-img {
+  width: 110%;
+  height: 110%;
+  object-fit: cover;
+  transform: translate(-5%, -5%);
+  user-select: none;
+  pointer-events: none;
+}
+
+.facecard-shine {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    380px circle at calc(var(--mx) * 100%) calc(var(--my) * 100%),
+    rgba(255, 255, 255, 0.20),
+    transparent 55%
+  );
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.facecard-content {
+  position: relative;
+  z-index: 2;
+}
+
+.facecard-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.facecard-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.facecard-age {
+  font-size: 13px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.facecard-meta {
+  margin-top: 10px;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.72);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.facecard-footer {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+/* --- Show All variant --- */
+.facecard-all {
+  display: block;
+}
+
+.facecard-allCenter {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.92);
+  z-index: 2;
+}
+
+/* subtle hover sheen for show-all */
+.facecard-tilt {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    420px circle at calc(var(--mx) * 100%) calc(var(--my) * 100%),
+    rgba(255, 255, 255, 0.10),
+    transparent 60%
+  );
+  opacity: 0.0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.facecard-tilt.is-hover {
+  opacity: 1;
+}
