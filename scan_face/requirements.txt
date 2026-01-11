@@ -1,0 +1,9 @@
+opencv-python>=4.8.0
+numpy>=1.24.0
+deepface>=0.0.79
+tensorflow>=2.13.0
+tf-keras>=2.20.0
+open3d>=0.17.0  # For 3D mesh reconstruction
+
+# Note: DeepFace uses TensorFlow as backend by default.
+# TensorFlow 2.20+ requires tf-keras package.
