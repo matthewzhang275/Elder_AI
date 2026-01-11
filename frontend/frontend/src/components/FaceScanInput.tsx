@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { uploadFaceScan } from '../api/uploadFaceScan'
 import './FaceScanInput.css'
 
 interface FaceScanData {
@@ -157,21 +158,26 @@ export function FaceScanInput() {
     setCountdown(null)
   }
 
-  const handlePushScan = () => {
-    const data: FaceScanData = {
+  const handlePushScan = async () => {
+    if (!name.trim()) return alert("Enter a name")
+    if (!age.trim()) return alert("Enter an age")
+    if (!videoBlob) return alert("Record a scan video first")
+
+    const res = await uploadFaceScan({
       name,
       description,
       age,
-      video: videoBlob
+      videoBlob,
+      filename: `scan-${name.replace(/\s+/g, "_")}-${Date.now()}.webm`,
+    })
+
+    if (!res.ok) {
+      alert(res.error)
+      return
     }
 
-    console.log('Form Data:', {
-      name,
-      description,
-      age
-    })
-    console.log('Video Blob:', videoBlob)
-    console.log('Complete Data Object:', data)
+    console.log("✅ Created person:", res.person)
+    alert(`Saved: ${res.person.name}`)
   }
 
   return (

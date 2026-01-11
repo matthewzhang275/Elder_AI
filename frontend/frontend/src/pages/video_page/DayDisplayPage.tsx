@@ -185,6 +185,7 @@ export default function DayDisplayPage() {
 
       {/* Right glass drawer (fixed) */}
       <RightGlassDrawer
+        dayId={dayId}
         defaultOpen={false}
       >
         {!activeStream ? (
