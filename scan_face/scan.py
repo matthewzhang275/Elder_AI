@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import pickle
 from typing import Union, List, Dict, Tuple, Optional
 from pathlib import Path
 
@@ -22,20 +23,27 @@ class PersonRecognizer:
     then draws bounding boxes with names on the detected faces.
     """
     
-    def __init__(self, threshold: float = 0.6, model_name: str = "VGG-Face"):
+    def __init__(self, threshold: float = 0.6, model_name: str = "VGG-Face", data_file: Optional[str] = "face_data.pkl"):
         """
         Initialize the PersonRecognizer.
         
         Args:
             threshold: Distance threshold for face recognition (lower is more strict)
             model_name: DeepFace model to use (e.g., "VGG-Face", "Facenet", "OpenFace")
+            data_file: Path to file for saving/loading facial recognition data (default: "face_data.pkl")
+                      Set to None to disable persistence
         """
         self.threshold = threshold
         self.model_name = model_name
+        self.data_file = data_file
         self.known_face_encodings: List[np.ndarray] = []
         self.known_face_names: List[str] = []
         # Store multiple encodings per person for better accuracy
         self.person_encodings: Dict[str, List[np.ndarray]] = {}
+        
+        # Load existing data if file exists
+        if self.data_file:
+            self.load_data()
     
     def register_person(self, image: Union[str, np.ndarray], name: str) -> bool:
         """
@@ -83,6 +91,9 @@ class PersonRecognizer:
             self.known_face_encodings.append(embedding)
             self.known_face_names.append(name)
             
+            # Save data to file
+            self.save_data()
+            
             return True
         except Exception as e:
             print(f"Error registering person {name}: {e}")
@@ -114,6 +125,11 @@ class PersonRecognizer:
                 print("FAILED (no face detected)")
         
         print(f"  Result: {results['success']} successful, {results['failed']} failed")
+        
+        # Save data after registration completes
+        if results['success'] > 0:
+            self.save_data()
+        
         return results
     
     def register_person_from_video(self, video_path: str, name: str, frame_interval: int = 30, max_frames: Optional[int] = None) -> Dict[str, int]:
@@ -392,6 +408,78 @@ class PersonRecognizer:
             if show_preview:
                 cv2.destroyAllWindows()
     
+    def save_data(self) -> bool:
+        """
+        Save facial recognition data to file.
+        
+        Returns:
+            True if saved successfully, False otherwise
+        """
+        if not self.data_file:
+            return False
+        
+        try:
+            data = {
+                'person_encodings': self.person_encodings,
+                'known_face_encodings': self.known_face_encodings,
+                'known_face_names': self.known_face_names,
+                'threshold': self.threshold,
+                'model_name': self.model_name
+            }
+            
+            # Ensure directory exists
+            data_path = Path(self.data_file)
+            data_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(self.data_file, 'wb') as f:
+                pickle.dump(data, f)
+            
+            return True
+        except Exception as e:
+            print(f"Error saving facial recognition data: {e}")
+            return False
+    
+    def load_data(self) -> bool:
+        """
+        Load facial recognition data from file.
+        
+        Returns:
+            True if loaded successfully, False if file doesn't exist or error occurred
+        """
+        if not self.data_file:
+            return False
+        
+        data_path = Path(self.data_file)
+        if not data_path.exists():
+            return False
+        
+        try:
+            with open(self.data_file, 'rb') as f:
+                data = pickle.load(f)
+            
+            # Load data
+            self.person_encodings = data.get('person_encodings', {})
+            self.known_face_encodings = data.get('known_face_encodings', [])
+            self.known_face_names = data.get('known_face_names', [])
+            
+            # Update threshold and model_name if they match (warn if they don't)
+            saved_threshold = data.get('threshold', self.threshold)
+            saved_model_name = data.get('model_name', self.model_name)
+            
+            if saved_threshold != self.threshold:
+                print(f"Warning: Loaded threshold ({saved_threshold}) differs from provided threshold ({self.threshold}). Using loaded value.")
+                self.threshold = saved_threshold
+            
+            if saved_model_name != self.model_name:
+                print(f"Warning: Loaded model_name ({saved_model_name}) differs from provided model_name ({self.model_name}). Using loaded value.")
+                self.model_name = saved_model_name
+            
+            print(f"Loaded {len(self.person_encodings)} registered person(s) from {self.data_file}")
+            return True
+        except Exception as e:
+            print(f"Error loading facial recognition data: {e}")
+            return False
+    
     def get_recognized_persons(self) -> List[str]:
         """
         Get list of all registered person names.
@@ -410,6 +498,16 @@ class PersonRecognizer:
         self.known_face_encodings.clear()
         self.known_face_names.clear()
         self.person_encodings.clear()
+        
+        # Also delete the data file if it exists
+        if self.data_file:
+            data_path = Path(self.data_file)
+            if data_path.exists():
+                try:
+                    data_path.unlink()
+                    print(f"Deleted data file: {self.data_file}")
+                except Exception as e:
+                    print(f"Error deleting data file: {e}")
 
 
 # Example usage
@@ -425,19 +523,14 @@ if __name__ == "__main__":
     
     # Example: Register a person (single image)
     # recognizer.register_person("path/to/person_image.jpg", "John Doe")
-    
+    recognizer.register_person_from_video("C:\\Users\\kzhao\\Documents\\Projects\\SBHacks\\Elder_AI\\scan_face\\facial_scan.mp4", "Kevin Zhao", frame_interval=10)
     # Example: Process an image
     # result_image = recognizer.process_image("path/to/test_image.jpg", "output.jpg")
     
     # Example: Process a video
-    # recognizer.process_video("path/to/video.mp4", "output_video.mp4")
+    recognizer.process_video("C:\\Users\\kzhao\\Documents\\Projects\\SBHacks\\Elder_AI\\scan_face\\other_me_video.mp4",
+     "output_video_2.mp4", show_preview=False)
     
     # Example: Process webcam
     # recognizer.process_video(0)  # 0 for default webcam
     
-    print("PersonRecognizer class ready to use!")
-    print("Register persons using register_person() method")
-    print("For better accuracy, use register_person_multiple() with multiple images")
-    print("Or use register_person_from_video() to register from video files")
-    print("Process images using process_image() method")
-    print("Process videos using process_video() method")
