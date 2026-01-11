@@ -1,12 +1,21 @@
-import { BrowserRouter,Routes, Route } from "react-router-dom"
-import DayDisplayPage from "./pages/video_page/DayDisplayPage"
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { NavBar } from './components/NavBar'
+import { Home } from './pages/Home'
+import { Footage } from './pages/Footage'
+import { FaceScan } from './pages/FaceScan'
+import './App.css'
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/day_display/:id" element={<DayDisplayPage />} />
-      </Routes>
+      <div className="app">
+        <NavBar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/footage" element={<Footage />} />
+          <Route path="/face-scan" element={<FaceScan />} />
+        </Routes>
+      </div>
     </BrowserRouter>
   )
 }

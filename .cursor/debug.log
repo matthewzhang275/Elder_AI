@@ -1,0 +1,2 @@
+{"location":"vite.config.ts:6","message":"Vite config loading - PostCSS should use @tailwindcss/postcss","data":{"postcssPlugin":"@tailwindcss/postcss"},"timestamp":1768074560851,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"A"}
+{"location":"vite.config.ts:6","message":"Vite config loading - PostCSS should use @tailwindcss/postcss","data":{"postcssPlugin":"@tailwindcss/postcss"},"timestamp":1768074626760,"sessionId":"debug-session","runId":"post-fix","hypothesisId":"A"}
