@@ -54,3 +54,4 @@ def create_person(request):
             "face": person.face.url,   # e.g. /media/faces/xxx.jpg
         }
     })
+

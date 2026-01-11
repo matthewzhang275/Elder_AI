@@ -1,141 +1,154 @@
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(229, 231, 235, 0.08) 100%
-  );
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  z-index: 1000;
+/* ===========================
+   NAVBAR ROOT — Apple-ish liquid glass
+   =========================== */
+
+:root {
+  /* tweak these to match your page */
+  --nav-height: 64px;
+  --nav-radius: 18px;
+  --nav-pad-x: 24px;
 }
 
-.navbar-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 1rem 1rem;
+/* If your page background is dark but not pure black, set it here instead:
+body { background: radial-gradient(...), linear-gradient(...); }
+*/
+
+.navbar {
+  height: var(--nav-height);
+  width: 100%;
+
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+
+  /* ✅ force no black bar */
+  background: transparent;
 }
+
+
+/* Create the glass panel as an inner “pill” */
+.navbar-container {
+  height: calc(var(--nav-height) - 12px);
+  width: min(1120px, calc(100% - 24px));
+  margin: 6px auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 var(--nav-pad-x);
+
+  border-radius: var(--nav-radius);
+
+  /* Liquid glass: translucent + blur */
+  background: rgba(18, 18, 20, 0.38);
+
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+
+  /* subtle “glass edge” */
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  /* soft lift */
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+
+  /* optional: smooth when you add a scrolled state later */
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+/* Optional: a gentle highlight sheen */
+.navbar-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+
+  background:
+    radial-gradient(800px 120px at 20% 0%, rgba(255,255,255,0.18), transparent 60%),
+    radial-gradient(700px 120px at 80% 0%, rgba(110,231,255,0.10), transparent 55%);
+
+  opacity: 0.9;
+}
+
+/* Ensure the pseudo-element positions correctly */
+.navbar-container {
+  position: relative;
+}
+
+/* ===========================
+   LINKS
+   =========================== */
 
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: 3rem;
+  gap: 28px;
 }
 
 .navbar-link {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.7);
-  text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1.25rem;
-  border-radius: 12px;
-  position: relative;
-  background: transparent;
-  border: 1px solid transparent;
-}
+  height: 100%;
 
-.navbar-link::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.navbar-link:hover,
-.navbar-link.active:hover {
-  color: #111827;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.7) 0%,
-    rgba(255, 255, 255, 0.5) 100%
-  );
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+  text-decoration: none;
   font-weight: 500;
+
+  color: rgba(255, 255, 255, 0.78);
+  transition: color 0.15s ease, opacity 0.15s ease;
 }
 
-.navbar-link:hover::before,
-.navbar-link.active:hover::before {
-  opacity: 1;
+.navbar-link:hover {
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .navbar-link.active {
-  color: #111827;
-  font-weight: 600;
-  background: transparent;
+  color: #fff;
 }
 
-.navbar-link.active::before {
-  opacity: 0;
-}
+/* ===========================
+   LOGO
+   =========================== */
 
 .navbar-logo {
-  height: 6rem;
+  height: 30px;
   width: auto;
+  display: block;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
 }
 
-@media (prefers-color-scheme: dark) {
-  .navbar {
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
-    background: linear-gradient(
-      135deg,
-      rgba(75, 85, 99, 0.15) 0%,
-      rgba(55, 65, 81, 0.1) 50%,
-      rgba(75, 85, 99, 0.12) 100%
-    );
-    border-bottom-color: rgba(255, 255, 255, 0.1);
+/* ===========================
+   MOBILE
+   =========================== */
+
+@media (max-width: 640px) {
+  :root {
+    --nav-height: 60px;
+    --nav-pad-x: 18px;
+    --nav-radius: 16px;
   }
 
-  .navbar-link {
-    color: rgba(255, 255, 255, 0.85);
-    border: 1px solid transparent;
+  .navbar-links {
+    gap: 18px;
   }
 
-  .navbar-link:hover,
-  .navbar-link.active:hover {
-    color: #ffffff;
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.25) 0%,
-      rgba(255, 255, 255, 0.15) 100%
-    );
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 
-      0 4px 6px -1px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
-    font-weight: 500;
+  .navbar-logo {
+    height: 28px;
   }
+}
 
-  .navbar-link.active {
-    color: #ffffff;
-    background: transparent;
-  }
+/* ===========================
+   REDUCE MOTION / SUPPORT
+   =========================== */
 
-  .navbar-link::before {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .navbar-container {
+    /* fallback: no blur, slightly more opaque */
+    background: rgba(18, 18, 20, 0.78);
   }
 }
