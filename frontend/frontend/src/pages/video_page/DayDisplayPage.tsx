@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
 import CameraSetupBox from "../../sub-pages/components/camera_setup/camera"
 import { VideoGlassCard } from "../../sub-pages/components/video_single/video_single"
