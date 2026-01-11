@@ -8,6 +8,7 @@ export function NavBar() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
+        {/* LEFT */}
         <div className="navbar-links">
           <Link
             to="/"
@@ -33,6 +34,18 @@ export function NavBar() {
           >
             Face Scan
           </Link>
+
+          <Link
+            to="/upload-footage"
+            className={location.pathname === "/upload-footage" ? "navbar-link active" : "navbar-link"}
+          >
+            Import Footage
+          </Link>
+        </div>
+
+        {/* RIGHT */}
+        <div className="navbar-user">
+          Logged in as <span className="navbar-org">Westmont Living</span> administrator
         </div>
       </div>
     </nav>

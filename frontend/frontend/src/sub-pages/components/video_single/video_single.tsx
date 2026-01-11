@@ -1,42 +1,46 @@
-import React from "react";
-import type { DiningTag } from "../../variables/video";
+// VideoGlassCard.tsx (FULL FILE — copy/paste)
+// Instead of thumbnailUrl, takes videoUrl and shows a hover-to-play preview.
+
+import React, { useEffect, useMemo, useRef, useState } from "react"
+import type { DiningTag } from "../../variables/video"
 
 type VideoGlassCardProps = {
-  thumbnailUrl: string;
-  videoName: string;
-  diningCommonsName: string;
-  dateTime: Date | string; // Date object or ISO string
-  tags?: DiningTag[];
-  onClick?: () => void;
+  videoUrl: string
+  videoName: string
+  diningCommonsName: string
+  dateTime: Date | string
+  tags?: DiningTag[]
+  onClick?: () => void
 
   // Optional sizing
-  width?: number | string;  // e.g. 360, "100%"
-  height?: number | string; // e.g. 220
-  className?: string;
-};
+  width?: number | string
+  height?: number | string
+  className?: string
+}
 
 const formatDateTime = (dt: Date | string) => {
-  const d = typeof dt === "string" ? new Date(dt) : dt;
-  if (Number.isNaN(d.getTime())) return "Invalid date";
+  const d = typeof dt === "string" ? new Date(dt) : dt
+  if (Number.isNaN(d.getTime())) return "Invalid date"
 
-  // Example: "Jan 10, 2026 • 11:06 AM"
-  return d.toLocaleString(undefined, {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).replace(",", "") // keep it clean-ish
-};
+  return d
+    .toLocaleString(undefined, {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    })
+    .replace(",", "")
+}
 
 const chipLabel = (t: string) => {
-  const s = t.trim();
-  if (!s) return s;
-  return s[0].toUpperCase() + s.slice(1);
-};
+  const s = t.trim()
+  if (!s) return s
+  return s[0].toUpperCase() + s.slice(1)
+}
 
 export const VideoGlassCard: React.FC<VideoGlassCardProps> = ({
-  thumbnailUrl,
+  videoUrl,
   videoName,
   diningCommonsName,
   dateTime,
@@ -46,7 +50,33 @@ export const VideoGlassCard: React.FC<VideoGlassCardProps> = ({
   height = 240,
   className = "",
 }) => {
-  const timeLabel = formatDateTime(dateTime);
+  const timeLabel = useMemo(() => formatDateTime(dateTime), [dateTime])
+
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [isHover, setIsHover] = useState(false)
+
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+
+    if (!isHover) {
+      try {
+        v.pause()
+        v.currentTime = 0
+      } catch {}
+      return
+    }
+
+    // Hover: try to play (muted + playsInline)
+    ;(async () => {
+      try {
+        if (v.readyState < 2) v.load()
+        await v.play()
+      } catch {
+        // autoplay can still be blocked sometimes; ignore
+      }
+    })()
+  }, [isHover, videoUrl])
 
   return (
     <button
@@ -63,33 +93,57 @@ export const VideoGlassCard: React.FC<VideoGlassCardProps> = ({
       }}
     >
       <div
+        onMouseEnter={() => setIsHover(true)}
+        onMouseLeave={() => setIsHover(false)}
         style={{
           borderRadius: 26,
           overflow: "hidden",
           position: "relative",
           height,
-          // glass shell
-          background:
-            "linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06))",
+          background: "linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06))",
           backdropFilter: "blur(18px) saturate(160%)",
           WebkitBackdropFilter: "blur(18px) saturate(160%)",
           border: "1px solid rgba(255,255,255,0.18)",
-          boxShadow:
-            "0 18px 50px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.20)",
+          boxShadow: "0 18px 50px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.20)",
         }}
       >
-        {/* Thumbnail */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: `url(${thumbnailUrl})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            transform: "scale(1.02)",
-            filter: "saturate(1.05) contrast(1.05)",
-          }}
-        />
+        {/* Video preview layer */}
+        <div style={{ position: "absolute", inset: 0 }}>
+          {videoUrl ? (
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              muted
+              playsInline
+              preload="metadata"
+              loop
+              // prevent iOS fullscreen on play
+              controls={false}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                transform: "scale(1.02)",
+                filter: "saturate(1.05) contrast(1.05)",
+                display: "block",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(0,0,0,0.35)",
+                color: "rgba(255,255,255,0.85)",
+              }}
+            >
+              No video
+            </div>
+          )}
+        </div>
 
         {/* Dark gradient for readability */}
         <div
@@ -131,14 +185,7 @@ export const VideoGlassCard: React.FC<VideoGlassCardProps> = ({
         >
           {/* Top row chips (tags) */}
           {tags.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               {tags.slice(0, 6).map((t, i) => (
                 <span
                   key={`${t}-${i}`}
@@ -148,8 +195,7 @@ export const VideoGlassCard: React.FC<VideoGlassCardProps> = ({
                     padding: "6px 10px",
                     borderRadius: 999,
                     color: "rgba(255,255,255,0.92)",
-                    background:
-                      "linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08))",
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08))",
                     border: "1px solid rgba(255,255,255,0.18)",
                     backdropFilter: "blur(12px)",
                     WebkitBackdropFilter: "blur(12px)",
@@ -227,5 +273,5 @@ export const VideoGlassCard: React.FC<VideoGlassCardProps> = ({
         </div>
       </div>
     </button>
-  );
-};
+  )
+}

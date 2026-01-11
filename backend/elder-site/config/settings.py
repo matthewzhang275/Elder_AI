@@ -127,6 +127,8 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+FACE_DB_DIR = BASE_DIR / "media" / "face_db"
+FACE_DB_PATH = FACE_DB_DIR / "face_data.pkl"
 
 # CORS (for Vite / local dev)
 CORS_ALLOW_ALL_ORIGINS = True

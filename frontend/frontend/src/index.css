@@ -1,43 +1,47 @@
-/* ===========================
-   GLOBAL ROOT / TYPOGRAPHY
-   =========================== */
+/* =====================================================
+   GLOBAL RESET & BASE
+   ===================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
-:root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Avenir,
-    Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* ===========================
-   RESET
-   =========================== */
-
-html,
-body,
-#root {
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+
+  /* Disable ALL system dark/light theming */
+  color-scheme: normal;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-/* ===========================
-   GLOBAL APP BACKGROUND (FORCED)
-   =========================== */
+/* =====================================================
+   ROOT APP CONTAINER
+   ===================================================== */
 
-/* Put the background on BODY (most reliable), and force it to win */
+#root {
+  min-height: 100vh;
+  background: transparent;
+}
+
+/* Prevent any wrapper from painting its own bg */
+.App,
+.app,
+.page,
+.layout,
+main,
+.dd-page {
+  min-height: 100vh;
+  background: transparent !important;
+}
+
+/* =====================================================
+   GLOBAL BACKGROUND (FORCED, FULL PAGE)
+   ===================================================== */
+
 body {
   min-width: 320px;
   min-height: 100vh;
@@ -47,56 +51,125 @@ body {
     radial-gradient(1200px circle at 15% 10%, rgba(120, 220, 255, 0.14), transparent 55%),
     radial-gradient(900px circle at 85% 30%, rgba(180, 200, 255, 0.12), transparent 60%),
     radial-gradient(700px circle at 50% 85%, rgba(120, 255, 220, 0.10), transparent 65%),
-    linear-gradient(180deg, #0a0f14, #070b10) !important;
+    linear-gradient(180deg, #0a0f14, #070b10);
 
-  background-color: #070b10 !important; /* fallback */
+  background-color: #070b10;
+  background-repeat: no-repeat;
   background-attachment: fixed;
+
+  color: rgba(255, 255, 255, 0.92);
+
+  /* ✅ PROFESSIONAL HEALTHCARE TYPOGRAPHY */
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Helvetica, Arial, sans-serif;
+
+  font-size: 15.5px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Make sure #root is not painting black on top of body */
-#root {
-  background: transparent !important;
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.96);
 }
 
-/* If you have a top-level wrapper like .App, this prevents it painting black */
-.App,
-.app,
-.page,
-.layout,
-main {
-  background: transparent;
-}
+h1 { font-size: 2.4rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.4rem; }
 
-/* ===========================
-   BASE ELEMENTS
-   =========================== */
+/* =====================================================
+   TYPOGRAPHY
+   ===================================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+}
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
 
+p {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.6em 1.3em;
 
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
 
   color: rgba(255, 255, 255, 0.92);
-  background-color: rgba(26, 26, 26, 0.8);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.02)
+    );
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 
   cursor: pointer;
-  transition: border-color 0.25s ease, background-color 0.25s ease;
+  transition:
+    border-color 0.25s ease,
+    background-color 0.25s ease,
+    transform 0.15s ease;
 }
 
 button:hover {
-  border-color: #646cff;
+  border-color: rgba(140, 180, 255, 0.8);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
 }
 
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(120, 180, 255, 0.35);
+}
+
+/* =====================================================
+   INPUTS (OPTIONAL BUT CLEAN)
+   ===================================================== */
+
+input,
+textarea,
+select {
+  background: rgba(20, 25, 32, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0.5em 0.75em;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: rgba(140, 180, 255, 0.8);
+  box-shadow: 0 0 0 3px rgba(120, 180, 255, 0.25);
 }

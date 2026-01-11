@@ -1,70 +1,33 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import FaceCard from "../face_id_card/FaceCard"
 import VerticalTimeline from "../vertical_timeline/VerticalTimeLine"
-import type { TimelineEvent } from "../vertical_timeline/VerticalTimeLine"
+import type { TimelineEvent as UITimelineEvent } from "../vertical_timeline/VerticalTimeLine"
 import "./RightGlassDrawer.css"
 
+import { getAllPeople, type PersonAppeared } from "../../../api/people"
+
 type RightGlassDrawerProps = {
+  dayId: string
   defaultOpen?: boolean
   openWidth?: number
   closedWidth?: number
   children?: React.ReactNode
 }
 
-type PersonAppeared = {
-  id: string
-  imgUrl: string
-  name: string
-  age: number | string
-  meta: string
-}
-
 export const RightGlassDrawer: React.FC<RightGlassDrawerProps> = ({
+  dayId,
   defaultOpen = true,
   openWidth,
   closedWidth = 48,
   children,
 }) => {
   const [open, setOpen] = useState(defaultOpen)
-
-  // which resident is selected for filtering timeline (null = show all)
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null)
 
-  // ---- Backend-driven people list (stub for now) ----
-  const [people, setPeople] = useState<PersonAppeared[]>([
-    {
-      id: "p1",
-      imgUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?fit=crop&w=1200&q=80",
-      name: "Resident A",
-      age: 82,
-      meta: "Seen 3 times • Cam 2 • 12:41 PM",
-    },
-    {
-      id: "p2",
-      imgUrl: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?fit=crop&w=1200&q=80",
-      name: "Resident B",
-      age: 77,
-      meta: "Seen 1 time • Cam 1 • 9:02 AM",
-    },
-    {
-      id: "p3",
-      imgUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?fit=crop&w=1200&q=80",
-      name: "Resident C",
-      age: "Unknown",
-      meta: "Seen 5 times • Cam 4 • 6:18 PM",
-    },
-  ])
-
-  // ---- Timeline (stub for now) ----
-  const [durationSec, setDurationSec] = useState<number>(42 * 60 + 10) // 42:10
-  const [events, setEvents] = useState<TimelineEvent[]>([
-    { id: "e1", personId: "p1", atSec: 35, label: "p1 entered" },
-    { id: "e2", personId: "p2", atSec: 140, label: "p2 entered" },
-    { id: "e3", personId: "p1", atSec: 420, label: "p1 seated" },
-    { id: "e4", personId: "p3", atSec: 615, label: "p3 entered" },
-    { id: "e5", personId: "p2", atSec: 980, label: "p2 left" },
-    { id: "e6", personId: "p1", atSec: 1710, label: "p1 left" },
-  ])
+  // ---- backend-driven ----
+  const [people, setPeople] = useState<PersonAppeared[]>([])
+  const [durationSec, setDurationSec] = useState<number>(0)
+  const [events, setEvents] = useState<UITimelineEvent[]>([])
 
   // carousel ref
   const peopleRailRef = useRef<HTMLDivElement | null>(null)
@@ -78,17 +41,31 @@ export const RightGlassDrawer: React.FC<RightGlassDrawerProps> = ({
   }, [])
 
   useEffect(() => {
-    // TODO: BACKEND CALL GOES HERE
-    // Example:
-    // const load = async () => {
-    //   const res = await fetch(`/api/monitoring_stats?dayId=...`)
-    //   const data = await res.json()
-    //   setPeople(data.people)
-    //   setDurationSec(data.videoDuration)
-    //   setEvents(data.timelineEvents)
-    // }
-    // load()
-  }, [])
+    let alive = true
+
+    ;(async () => {
+      try {
+        // ✅ calls your Django: GET /api/people/
+        const loadedPeople = await getAllPeople()
+        if (!alive) return
+
+        setPeople(loadedPeople)
+
+        // these are still stubbed until you make endpoints for them
+        setDurationSec(0)
+        setEvents([])
+
+        // reset filter when day changes
+        setSelectedPersonId(null)
+      } catch (e) {
+        console.log("getAllPeople failed", e)
+      }
+    })()
+
+    return () => {
+      alive = false
+    }
+  }, [dayId])
 
   const widthStyle = useMemo(() => {
     const w = open ? openWidth ?? "clamp(420px, 50vw, 760px)" : `${closedWidth}px`
@@ -101,17 +78,16 @@ export const RightGlassDrawer: React.FC<RightGlassDrawerProps> = ({
     return events.filter((e) => e.personId === selectedPersonId)
   }, [events, selectedPersonId])
 
-  const onShowAll = () => {
-    setSelectedPersonId(null)
-    console.log("Show ALL timeline events")
-  }
+  // ✅ NEW: resolve selected person's NAME from the ID
+  const selectedPersonName = useMemo(() => {
+    if (!selectedPersonId) return null
+    return people.find((p) => p.id === selectedPersonId)?.name ?? null
+  }, [people, selectedPersonId])
 
-  const onPersonClick = (personId: string) => {
-    setSelectedPersonId(personId)
-    console.log("Filter timeline -> person:", personId)
-  }
+  const onShowAll = () => setSelectedPersonId(null)
+  const onPersonClick = (personId: string) => setSelectedPersonId(personId)
 
-  const onTimelineEventClick = (ev: TimelineEvent) => {
+  const onTimelineEventClick = (ev: UITimelineEvent) => {
     console.log("timeline click -> person:", ev.personId, "seek sec:", ev.atSec, ev)
   }
 
@@ -150,12 +126,7 @@ export const RightGlassDrawer: React.FC<RightGlassDrawerProps> = ({
             </div>
 
             <div className="rgd-carousel">
-              <button
-                type="button"
-                className="rgd-carArrow rgd-carArrowLeft"
-                onClick={() => scrollPeopleBy("left")}
-                aria-label="Scroll residents left"
-              >
+              <button type="button" className="rgd-carArrow rgd-carArrowLeft" onClick={() => scrollPeopleBy("left")}>
                 ←
               </button>
 
@@ -174,20 +145,11 @@ export const RightGlassDrawer: React.FC<RightGlassDrawerProps> = ({
                 ))}
 
                 <div className="rgd-carSlot">
-                  <FaceCard
-                    all
-                    onClick={onShowAll}
-                    className={!selectedPersonId ? "rgd-personSelected" : undefined}
-                  />
+                  <FaceCard all onClick={onShowAll} className={!selectedPersonId ? "rgd-personSelected" : undefined} />
                 </div>
               </div>
 
-              <button
-                type="button"
-                className="rgd-carArrow rgd-carArrowRight"
-                onClick={() => scrollPeopleBy("right")}
-                aria-label="Scroll residents right"
-              >
+              <button type="button" className="rgd-carArrow rgd-carArrowRight" onClick={() => scrollPeopleBy("right")}>
                 →
               </button>
             </div>
@@ -196,12 +158,11 @@ export const RightGlassDrawer: React.FC<RightGlassDrawerProps> = ({
           {/* Timeline */}
           <div className="rgd-section rgd-timelineSection">
             <div className="rgd-sectionHeader rgd-timelineHeader">
-            <div className="rgd-sectionTitle">
-                Timeline{selectedPersonId ? ` • ${selectedPersonId}` : " • All"}
+              <div className="rgd-sectionTitle">
+                Timeline{selectedPersonName ? ` • ${selectedPersonName}` : " • All"}
+              </div>
+              <div className="rgd-divider" />
             </div>
-            <div className="rgd-divider" />
-            </div>
-
 
             <VerticalTimeline
               durationSec={durationSec}
