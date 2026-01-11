@@ -141,3 +141,4 @@ CORS_ALLOW_CREDENTIALS = True
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+TWELVELABS_API_KEY = "tlk_0Q8CB5Y2GEAJ3Z20M8A7M3BBMFT2"

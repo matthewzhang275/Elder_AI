@@ -1,22 +1,9 @@
-// LocationPage.tsx
-import { useEffect, useMemo, useRef, useState } from "react"
+// src/pages/location/LocationPage.tsx
+import { useEffect, useMemo, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import QuadThumbCard from "../../components/QuadThumbCard"
+import HoverVideoCard from "../../components/HoverVideoCard"
+import { getAllIndividualVideos, type GetAllVideosResponse } from "../../api/footage"
 import "./LocationPage.css"
-
-type LocationItem = {
-  id: string
-  location: string
-  date: string // ISO "YYYY-MM-DD"
-  title: string
-  description: string
-  thumbnails: (string | null)[]
-}
-
-type LocationGroup = {
-  location: string
-  items: LocationItem[]
-}
 
 const LOCATIONS = [
   "Dining Commons #1",
@@ -29,32 +16,6 @@ const LOCATIONS = [
 const toISODate = (d: Date) => d.toISOString().slice(0, 10)
 const isISODate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s)
 
-/** DUD */
-const getAllByLocationAndDate = async (
-  location: string,
-  dateISO: string
-): Promise<LocationItem[]> => {
-  await new Promise((r) => setTimeout(r, 120))
-
-  return Array.from({ length: 8 }).map((_, i) => ({
-    id: `${location}-${dateISO}-${i}`, // <-- this will become :id for /footage/:id
-    location,
-    date: dateISO,
-    title: `Clip ${i + 1}`,
-    description: "Click to learn more about what happened here.",
-    thumbnails: [null, null, null, null],
-  }))
-}
-
-const getAllLocationsByDate = async (dateISO: string): Promise<LocationGroup[]> => {
-  return Promise.all(
-    LOCATIONS.map(async (loc) => ({
-      location: loc,
-      items: await getAllByLocationAndDate(loc, dateISO),
-    }))
-  )
-}
-
 const formatNiceDate = (iso: string) => {
   const d = new Date(`${iso}T00:00:00`)
   if (Number.isNaN(d.getTime())) return iso
@@ -66,7 +27,46 @@ const formatNiceDate = (iso: string) => {
   })
 }
 
-const LocationPage = () => {
+type UiVideo = {
+  id: string
+  title: string
+  description: string
+  thumbnailUrl: string | null
+  videoUrl: string
+}
+
+type LocationGroup = {
+  location: string
+  summary: string
+  videos: UiVideo[]
+  ok: boolean
+  error?: string
+}
+
+const pick = (v: any, keys: string[]) => {
+  for (const k of keys) if (v?.[k] !== undefined) return v[k]
+  return undefined
+}
+
+const normalizeVideo = (v: any, idx: number): UiVideo => {
+  const id = String(pick(v, ["id", "clip_id", "clipId"]) ?? `clip-${idx}`)
+  const videoUrl = String(pick(v, ["video_url", "videoUrl", "url"]) ?? "")
+  const thumbnailUrl = (pick(v, ["thumbnail_url", "thumbnailUrl", "thumb_url", "thumbUrl"]) ?? null) as
+    | string
+    | null
+  const title = String(pick(v, ["title", "name"]) ?? `Clip ${idx + 1}`)
+  const description = String(pick(v, ["description", "desc"]) ?? "Hover to preview.")
+  return { id, title, description, thumbnailUrl, videoUrl }
+}
+
+const makeSummary = (resp: GetAllVideosResponse, playableCount: number) => {
+  if (!resp.ok) return resp.error ?? "Failed to load clips."
+  if (playableCount === 0) return "None found."
+  const total = typeof resp.total === "number" ? resp.total : playableCount
+  return `${total} clip${total === 1 ? "" : "s"} available.`
+}
+
+export default function LocationPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -76,36 +76,61 @@ const LocationPage = () => {
     return toISODate(new Date())
   }, [searchParams])
 
+  const placement = useMemo(() => {
+    const p = Number(searchParams.get("placement") ?? "0")
+    return Number.isFinite(p) ? p : 0
+  }, [searchParams])
+
   const [groups, setGroups] = useState<LocationGroup[]>([])
   const [loading, setLoading] = useState(false)
 
-  const railRefs = useRef<Record<string, HTMLDivElement | null>>({})
-
   useEffect(() => {
     let cancelled = false
+
     ;(async () => {
       setLoading(true)
       try {
-        const res = await getAllLocationsByDate(dateISO)
-        if (!cancelled) setGroups(res)
+        const results = await Promise.all(
+          LOCATIONS.map(async (location) => {
+            const resp = await getAllIndividualVideos({
+              date: dateISO,
+              location,
+              placement,
+            })
+
+            const vidsRaw = Array.isArray(resp.videos) ? resp.videos : []
+            const vids = vidsRaw
+              .map((v, i) => normalizeVideo(v, i))
+              .filter((v) => v.videoUrl)
+
+            return {
+              location,
+              ok: resp.ok,
+              error: resp.error,
+              summary: makeSummary(resp, vids.length),
+              videos: vids,
+            } satisfies LocationGroup
+          })
+        )
+
+        if (!cancelled) setGroups(results)
       } finally {
         if (!cancelled) setLoading(false)
       }
     })()
+
     return () => {
       cancelled = true
     }
-  }, [dateISO])
+  }, [dateISO, placement])
 
-  // ✅ Navigate to /footage/:id
-  // (keeping date/location as query params is optional but useful)
-  const onOpen = (location: string, id: string) => {
+  const onOpenClip = (clipId: string, location: string) => {
     const qs = new URLSearchParams({
       date: dateISO,
       location,
+      placement: String(placement),
     }).toString()
-
-    navigate(`/footage/${encodeURIComponent(id)}?${qs}`)
+    navigate(`/footage/${encodeURIComponent(clipId)}?${qs}`)
   }
 
   return (
@@ -136,26 +161,34 @@ const LocationPage = () => {
             <section key={g.location} className="lp-row">
               <div className="lp-rowHeader">
                 <div className="lp-rowTitle">{g.location}</div>
+                <div className={`lp-rowSummary ${!g.ok ? "is-error" : g.videos.length === 0 ? "is-empty" : ""}`}>
+                  {g.summary}
+                </div>
               </div>
 
-              <div
-                className="lp-rail"
-                ref={(el) => {
-                  railRefs.current[g.location] = el
-                }}
-              >
-                {g.items.map((it) => (
-                  <QuadThumbCard
-                    key={it.id}
-                    thumbnails={it.thumbnails}
-                    location={it.location}
-                    title={it.title}
-                    description={it.description}
-                    onClick={() => onOpen(it.location, it.id)}
-                    className="lp-card"
-                  />
-                ))}
-              </div>
+              {g.videos.length === 0 ? (
+                <div className="lp-noneFound">
+                  <div className="lp-noneTitle">No clips</div>
+                  <div className="lp-noneSub">
+                    Nothing recorded for this location on {formatNiceDate(dateISO)}
+                    {placement ? ` (placement ${placement})` : ""}.
+                  </div>
+                </div>
+              ) : (
+                <div className="lp-rail">
+                  {g.videos.map((v) => (
+                    <HoverVideoCard
+                      key={v.id}
+                      title={v.title}
+                      description={v.description}
+                      thumbnailUrl={v.thumbnailUrl}
+                      videoUrl={v.videoUrl}
+                      onClick={() => onOpenClip(v.id, g.location)}
+                      className="lp-card"
+                    />
+                  ))}
+                </div>
+              )}
             </section>
           ))}
         </div>
@@ -163,5 +196,3 @@ const LocationPage = () => {
     </div>
   )
 }
-
-export default LocationPage
