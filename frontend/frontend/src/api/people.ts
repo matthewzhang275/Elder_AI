@@ -53,9 +53,10 @@ export const getAllPeople = async (): Promise<PersonAppeared[]> => {
     id: String(p.id),
     name: p.name,
     age: p.age ?? "Unknown",
-    imgUrl: p.thumb_url
-      ? `http://127.0.0.1:8000${p.thumb_url}` // IMPORTANT
-      : "",
+
+    // ✅ BACKEND ALREADY RETURNS ABSOLUTE URL
+    imgUrl: p.thumb_url ?? "",
+
     meta: p.description || "—",
   }))
 }

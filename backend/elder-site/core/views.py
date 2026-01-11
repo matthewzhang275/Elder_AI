@@ -119,43 +119,61 @@ def upload_footage(request):
 def _ensure_face_thumbnail(person: People) -> None:
     """
     If person.face_image is missing and person.scan_video exists,
-    generate a jpg thumbnail from the FIRST frame and save it to face_image.
+    generate a jpg thumbnail from ~middle of the scan video and save it.
     """
     if person.face_image:
         return
     if not person.scan_video:
         return
 
-    # Try OpenCV first (recommended)
     try:
-        import cv2  # pip install opencv-python
-        import numpy as np
+        import cv2
 
-        video_path = person.scan_video.path  # local MEDIA_ROOT storage required
-
+        video_path = person.scan_video.path  # requires local storage
         cap = cv2.VideoCapture(video_path)
-        ok, frame = cap.read()  # first frame
-        cap.release()
 
-        if not ok or frame is None:
+        if not cap.isOpened():
+            cap.release()
             return
 
-        # frame is BGR -> encode jpg
+        # Try to seek to the middle of the video (or at least ~1s in)
+        fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+        frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0
+
+        # If frame_count is known, go to middle; else go to 1 second.
+        if frame_count and frame_count > 0:
+            target_frame = int(frame_count * 0.5)
+        else:
+            target_frame = int(fps * 1.0)
+
+        cap.set(cv2.CAP_PROP_POS_FRAMES, target_frame)
+
+        ok, frame = cap.read()
+
+        # Fallback: if that frame is bad/black, try a few other offsets
+        if (not ok) or frame is None:
+            for sec in (0.5, 1.0, 2.0, 3.0):
+                cap.set(cv2.CAP_PROP_POS_MSEC, sec * 1000.0)
+                ok, frame = cap.read()
+                if ok and frame is not None:
+                    break
+
+        cap.release()
+
+        if (not ok) or frame is None:
+            return
+
+        # Encode jpg
         ok2, buf = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 85])
         if not ok2:
             return
 
-        jpg_bytes = buf.tobytes()
         fname = f"person_{person.id}_thumb.jpg"
-
-        person.face_image.save(fname, ContentFile(jpg_bytes), save=True)
-        return
+        person.face_image.save(fname, ContentFile(buf.tobytes()), save=True)
 
     except Exception:
-        # If OpenCV isn't installed or fails, just skip thumbnail generation
         return
-
-
+    
 @csrf_exempt
 @require_http_methods(["GET"])
 def list_people(request):
